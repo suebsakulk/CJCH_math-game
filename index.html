@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>เกมบวกลบ ป.1</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@500;700&family=Noto+Sans+Thai+Looped:wght@400;500;700&display=swap">
+<style>
+/* Layout: one column. Light theme = school notebook (ruled paper, red margin). Dark theme = chalkboard.
+   Answers are labelled ก ข ค like Thai multiple choice. Counting aid = ten-frame. */
+:root{
+  --bg:#E8EEF7; --paper:#FFFFFF; --ink:#1B2744; --muted:#55617B;
+  --rule:#D3E0F2; --frame:#8EA3C4; --margin:#E2677A;
+  --accent:#2B62E0; --accent-ink:#FFFFFF; --warm:#F28C28;
+  --good:#0F6B47; --good-bg:#D9F3E6; --try:#9A4A00; --try-bg:#FFE9CC; --shadow:#1B2744;
+  --font-display:'Mali','Noto Sans Thai Looped',system-ui,sans-serif;
+  --font-body:'Noto Sans Thai Looped','Noto Sans Thai',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17302A; --paper:#20403A; --ink:#F4F2E8; --muted:#B3CABE;
+    --rule:#30574B; --frame:#6F9A8A; --margin:#EA939F;
+    --accent:#8CC8FF; --accent-ink:#0F2520; --warm:#FFC46B;
+    --good:#8EE6BB; --good-bg:#2A5A47; --try:#FFCB90; --try-bg:#5B4627; --shadow:#0C1914;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17302A; --paper:#20403A; --ink:#F4F2E8; --muted:#B3CABE;
+  --rule:#30574B; --frame:#6F9A8A; --margin:#EA939F;
+  --accent:#8CC8FF; --accent-ink:#0F2520; --warm:#FFC46B;
+  --good:#8EE6BB; --good-bg:#2A5A47; --try:#FFCB90; --try-bg:#5B4627; --shadow:#0C1914;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--font-body); font-size:17px; line-height:1.6;
+  padding-inline:16px; padding-block:20px 48px;
+}
+.app{max-width:640px; margin-inline:auto; display:flex; flex-direction:column; gap:18px}
+section[hidden]{display:none}
+h1,h2,h3{font-family:var(--font-display); margin:0; line-height:1.25; text-wrap:balance}
+p{margin:0}
+button,input,select{font:inherit; color:inherit}
+:focus-visible{outline:3px solid var(--accent); outline-offset:3px}
+.eyebrow{font-size:14px; font-weight:700; letter-spacing:.04em; color:var(--muted)}
+.link{background:none; border:0; padding:6px 2px; color:var(--muted); text-decoration:underline; text-underline-offset:3px; cursor:pointer; font-size:15px}
+.link:hover{color:var(--ink)}
+
+/* notebook sheet */
+.sheet{
+  position:relative; background:var(--paper); border:2px solid var(--ink); border-radius:16px;
+  padding:18px 18px 18px 54px;
+  background-image:linear-gradient(to bottom, transparent 35px, var(--rule) 35px);
+  background-size:100% 36px; background-position:0 18px;
+  box-shadow:0 5px 0 var(--shadow);
+}
+.sheet::before{content:""; position:absolute; top:0; bottom:0; left:40px; width:2px; background:var(--margin); opacity:.8}
+.sheet.plainbg{background-image:none}
+
+/* buttons */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:56px; padding:10px 24px;
+  border:2px solid var(--ink); border-radius:14px; background:var(--paper); cursor:pointer;
+  font-family:var(--font-display); font-weight:700; font-size:21px; box-shadow:0 4px 0 var(--shadow);
+  transition:transform .08s, box-shadow .08s;
+}
+.btn.primary{background:var(--accent); color:var(--accent-ink)}
+.btn:active{transform:translateY(3px); box-shadow:0 1px 0 var(--shadow)}
+.btn.block{width:100%}
+
+/* start */
+.top0{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:16px 24px}
+.top0 h1{font-size:clamp(44px, 14vw, 68px); font-weight:700; letter-spacing:-.01em}
+.tenframe{margin:0; display:flex; flex-direction:column; gap:6px}
+.tenframe figcaption{font-family:var(--font-display); font-weight:700; font-size:16px; color:var(--muted)}
+.lead{color:var(--muted)}
+.field{display:flex; flex-direction:column; gap:8px}
+.field label{font-family:var(--font-display); font-weight:700; font-size:20px}
+.field .inrow{display:flex; align-items:center; gap:10px}
+.field input[type=text]{
+  flex:1; min-width:0; min-height:56px; padding:8px 14px; font-family:var(--font-display); font-size:24px; font-weight:500;
+  background:var(--bg); border:2px solid var(--ink); border-radius:12px;
+}
+.field input::placeholder{color:var(--muted); opacity:.8}
+.count{font-size:14px; color:var(--muted); font-variant-numeric:tabular-nums; min-width:46px; text-align:right}
+.hint{font-size:14px; color:var(--muted)}
+.msg-err{min-height:1.6em; font-size:15px; font-weight:700; color:var(--try)}
+.sheet fieldset.pick{border:0; margin:0; padding:0; min-width:0; display:flex; flex-direction:column; gap:8px; margin-bottom:16px}
+.pick legend{padding:0; margin-bottom:8px; font-family:var(--font-display); font-weight:700; font-size:20px}
+.choices{display:flex; flex-wrap:wrap; gap:10px}
+.choice{position:relative; flex:1 1 90px; min-width:0}
+.choice input{position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer}
+.choice span{display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:64px; padding:6px 8px; border:2px solid var(--ink); border-radius:12px; background:var(--paper); font-family:var(--font-display); font-weight:700; font-size:22px; line-height:1.2; box-shadow:0 3px 0 var(--shadow)}
+.choice span small{font-family:var(--font-body); font-weight:500; font-size:13px; color:var(--muted)}
+.choice input:checked + span{background:var(--accent); color:var(--accent-ink)}
+.choice input:checked + span small{color:var(--accent-ink)}
+.choice input:focus-visible + span{outline:3px solid var(--accent); outline-offset:3px}
+.facts{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:8px}
+.facts li{font-size:15px; font-weight:500; padding:4px 12px; border:2px solid var(--frame); border-radius:999px; color:var(--muted)}
+details.teacher{border:2px solid var(--frame); border-radius:14px; padding:4px 16px}
+details.teacher summary{cursor:pointer; min-height:44px; display:flex; align-items:center; font-weight:700}
+details.teacher .inside{display:flex; flex-direction:column; gap:10px; padding-bottom:14px}
+details.teacher select{min-height:46px; padding:6px 10px; background:var(--paper); border:2px solid var(--ink); border-radius:10px}
+
+/* play */
+.bar{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.who{font-family:var(--font-display); font-weight:700; font-size:22px; overflow-wrap:anywhere; min-width:0}
+.who small{display:block; font-family:var(--font-body); font-size:13px; font-weight:500; color:var(--muted)}
+.score{display:flex; align-items:center; gap:6px; font-family:var(--font-display); font-weight:700; font-size:28px; font-variant-numeric:tabular-nums}
+.score .star{color:var(--warm); font-size:30px; line-height:1}
+.score.pop .star{animation:pop .5s}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.5) rotate(-12deg)}100%{transform:scale(1)}}
+.progress{display:flex; gap:4px}
+.seg{flex:1; height:10px; border-radius:5px; background:var(--rule)}
+.seg.ok{background:var(--good)}
+.seg.bad{background:var(--warm)}
+.seg.cur{background:transparent; box-shadow:inset 0 0 0 2px var(--accent)}
+.tools{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 12px}
+.qnum{font-weight:700}
+.tools .grp{display:flex; gap:12px}
+.qtext{font-size:21px; font-weight:500; line-height:36px}
+.qtext.plain{display:flex; flex-direction:column}
+.qtext .eq{font-family:var(--font-display); font-weight:700; font-size:clamp(44px, 14vw, 64px); line-height:72px; font-variant-numeric:tabular-nums}
+.qtext .ask{font-size:20px; color:var(--muted)}
+.viz{margin-top:14px; display:flex; flex-direction:column; gap:8px}
+.frames{display:flex; flex-wrap:wrap; gap:10px}
+.frame{display:grid; grid-template-columns:repeat(5, 22px); gap:4px; padding:5px; border:2px solid var(--frame); border-radius:8px; background:var(--paper)}
+.dot{width:22px; height:22px; border-radius:50%; position:relative; background:var(--rule)}
+.dot.a{background:var(--accent)}
+.dot.b{background:var(--warm)}
+.dot.gone{background:transparent; border:2px dashed var(--muted)}
+.dot.gone::after{content:"×"; position:absolute; inset:0; display:grid; place-items:center; font-size:17px; line-height:1; color:var(--muted); font-weight:700}
+.legend{display:flex; flex-wrap:wrap; gap:4px 16px; font-size:14px; color:var(--muted); line-height:1.4}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.legend .dot{width:14px; height:14px}
+.legend .dot.gone::after{font-size:11px}
+.options{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px}
+.opt{
+  position:relative; min-height:104px; display:flex; align-items:center; justify-content:center;
+  background:var(--paper); border:2px solid var(--ink); border-radius:16px; box-shadow:0 5px 0 var(--shadow);
+  cursor:pointer; transition:transform .08s, box-shadow .08s; padding:22px 6px 10px;
+}
+.opt .lab{position:absolute; top:6px; left:12px; font-family:var(--font-display); font-weight:700; font-size:18px; color:var(--muted)}
+.opt .num{font-family:var(--font-display); font-weight:700; font-size:44px; line-height:1; font-variant-numeric:tabular-nums}
+.opt .tag{position:absolute; bottom:6px; left:0; right:0; text-align:center; font-size:12px; font-weight:700; line-height:1.2}
+.opt:not(:disabled):active{transform:translateY(4px); box-shadow:0 1px 0 var(--shadow)}
+@media (hover:hover){.opt:not(:disabled):hover{transform:translateY(-2px)}}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-bg); color:var(--good)}
+.opt.right .lab{color:var(--good)}
+.opt.wrong{background:var(--try-bg); color:var(--try)}
+.opt.wrong .lab{color:var(--try)}
+.opt.dim{opacity:.55}
+.opt.right .num,.opt.wrong .num{margin-bottom:10px}
+.fb{display:flex; flex-direction:column; align-items:flex-start; gap:10px; padding:16px; border-radius:16px; border:2px solid currentColor}
+.fb.ok{background:var(--good-bg); color:var(--good)}
+.fb.bad{background:var(--try-bg); color:var(--try)}
+.fb .main{font-family:var(--font-display); font-weight:700; font-size:22px; line-height:1.35}
+.fb .eqline{font-family:var(--font-display); font-weight:700; font-size:20px; font-variant-numeric:tabular-nums}
+.fb .btn{align-self:stretch}
+
+/* result */
+.hero{display:flex; flex-direction:column; gap:12px}
+.hero h2{font-size:30px; overflow-wrap:anywhere}
+.scoreRow{display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px}
+.big{font-family:var(--font-display); font-weight:700; font-size:72px; line-height:1; font-variant-numeric:tabular-nums}
+.big small{font-size:32px; color:var(--muted)}
+.pill{display:inline-flex; align-items:center; padding:3px 12px; border-radius:999px; font-weight:700; font-size:15px; line-height:1.5; border:2px solid currentColor; white-space:nowrap}
+.pill.low{color:var(--try); background:var(--try-bg)}
+.pill.pass,.pill.top{color:var(--good); background:var(--good-bg)}
+.pill.lg{font-size:19px; padding:4px 16px}
+.msg{font-size:18px}
+.meterWrap{position:relative; padding-bottom:28px; padding-top:6px}
+.meter{position:relative; height:18px; border-radius:9px; background:var(--rule)}
+.meter.sm{height:12px; border-radius:6px}
+.fill{height:100%; border-radius:inherit; background:var(--good); min-width:0}
+.fill.low{background:var(--warm)}
+.mark{position:absolute; top:-6px; bottom:-6px; width:3px; margin-left:-1px; background:var(--ink); border-radius:2px}
+.markLabel{position:absolute; top:34px; transform:translateX(-50%); font-size:13px; font-weight:700; color:var(--muted); white-space:nowrap}
+.note{font-size:14px; color:var(--muted)}
+.tiles{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px}
+.tile{display:flex; flex-direction:column; gap:2px; padding:12px 14px; border:2px solid var(--frame); border-radius:14px; background:var(--paper)}
+.tile .k{font-size:14px; color:var(--muted); font-weight:500}
+.tile .v{font-family:var(--font-display); font-weight:700; font-size:32px; line-height:1.2; font-variant-numeric:tabular-nums}
+.tile .v small{font-size:15px; color:var(--muted); font-family:var(--font-body); font-weight:500}
+.block{display:flex; flex-direction:column; gap:12px}
+.block h3{font-size:22px}
+.skill{display:flex; flex-direction:column; gap:6px}
+.skill .row{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.skill .name{font-weight:700; font-size:18px}
+.skill .frac{font-family:var(--font-display); font-weight:700; font-size:20px; font-variant-numeric:tabular-nums}
+.skill .meterWrap{padding-bottom:0; padding-top:4px}
+.tip{padding:10px 14px; border-radius:12px; background:var(--try-bg); color:var(--try); font-weight:700}
+.review{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px}
+.review li{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:4px 12px; padding:8px 12px; border-radius:12px; background:var(--paper); border:2px solid var(--rule)}
+.review .rn{font-size:14px; color:var(--muted); font-weight:700; min-width:3.2em}
+.review .req{font-family:var(--font-display); font-weight:700; font-size:20px; font-variant-numeric:tabular-nums}
+.review .rst{display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--try)}
+.hist{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; padding-top:8px}
+.hcol{flex:1 0 40px; display:flex; flex-direction:column; gap:4px; align-items:stretch}
+.hplot{position:relative; height:120px; border-bottom:2px solid var(--ink)}
+.hbar{position:absolute; left:5px; right:5px; bottom:0; border-radius:6px 6px 0 0; background:var(--good)}
+.hbar.low{background:var(--warm)}
+.htick{position:absolute; left:-4px; right:-4px; border-top:2px dashed var(--ink)}
+.hlab{font-family:var(--font-display); font-weight:700; font-size:15px; text-align:center; font-variant-numeric:tabular-nums}
+.hdate{font-size:12px; color:var(--muted); text-align:center; line-height:1.3}
+.hcol.cur .hlab{text-decoration:underline; text-decoration-thickness:3px; text-underline-offset:3px}
+.actions{display:flex; flex-direction:column; gap:10px}
+.actions .row2{display:flex; flex-wrap:wrap; gap:6px 18px; align-items:center}
+
+@media (max-width:420px){
+  .sheet{padding-left:50px; padding-right:14px}
+  .sheet::before{left:36px}
+  .opt .num{font-size:38px}
+  .options{gap:10px}
+  .big{font-size:60px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important}
+}
+</style>
+
+</head>
+<body>
+<div class="app" lang="th">
+
+  <!-- หน้าแรก -->
+  <section id="screenStart" aria-labelledby="t0" style="display:contents">
+    <header class="top0">
+      <div>
+        <p class="eyebrow">คณิตศาสตร์ ชั้นประถมศึกษาปีที่ 1</p>
+        <h1 id="t0" tabindex="-1">เกมบวกลบ</h1>
+      </div>
+      <figure class="tenframe" aria-label="ตัวอย่างแผ่นสิบช่อง 7 บวก 3 เท่ากับ 10">
+        <div class="frame" id="demoFrame"></div>
+        <figcaption>7 + 3 = 10</figcaption>
+      </figure>
+    </header>
+
+    <form id="startForm" class="sheet" autocomplete="off" novalidate>
+      <div class="field">
+        <label for="nameInput">ชื่อผู้เล่น</label>
+        <div class="inrow">
+          <input id="nameInput" type="text" maxlength="30" placeholder="พิมพ์ชื่อของหนู" spellcheck="false" autocapitalize="words">
+          <span class="count" id="nameCount" aria-hidden="true">0/30</span>
+        </div>
+        <p class="hint">ภาษาไทยหรืออังกฤษ ไม่เกิน 30 ตัวอักษร</p>
+        <p class="msg-err" id="nameMsg" role="alert"></p>
+      </div>
+      <fieldset class="pick">
+        <legend>ระดับความยาก</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="lvl" id="lvl10" value="10"><span>ง่าย<small>ไม่เกิน 10</small></span></label>
+          <label class="choice"><input type="radio" name="lvl" id="lvl20" value="20"><span>กลาง<small>ไม่เกิน 20</small></span></label>
+        </div>
+      </fieldset>
+      <fieldset class="pick">
+        <legend>จำนวนข้อต่อรอบ</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="rnd" id="rnd5" value="5"><span>5<small>ข้อ</small></span></label>
+          <label class="choice"><input type="radio" name="rnd" id="rnd10" value="10"><span>10<small>ข้อ</small></span></label>
+          <label class="choice"><input type="radio" name="rnd" id="rnd15" value="15"><span>15<small>ข้อ</small></span></label>
+        </div>
+      </fieldset>
+      <button type="submit" class="btn primary block" id="startBtn">เริ่มเล่น</button>
+    </form>
+
+    <ul class="facts" aria-label="วิธีเล่น">
+      <li>โจทย์บวกและลบ</li>
+      <li>เลือกตอบ ก ข หรือ ค</li>
+      <li>ตอบถูกได้ดาวทุกข้อ</li>
+    </ul>
+
+    <details class="teacher">
+      <summary>สำหรับครูและผู้ปกครอง</summary>
+      <div class="inside">
+        <label for="thrSel"><b>เกณฑ์ผ่าน</b> ใช้ตัดสินในหน้าสรุปผล</label>
+        <select id="thrSel"></select>
+        <p class="note">ผลการเล่นและชื่อเก็บไว้ในเครื่องนี้เท่านั้น</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- กำลังเล่น -->
+  <section id="screenPlay" hidden aria-label="กำลังเล่น" style="display:contents">
+    <div class="bar">
+      <div class="who"><small>ผู้เล่น</small><span id="whoName"></span></div>
+      <div class="score" id="scoreBox" aria-label="ดาวที่ได้"><span class="star" aria-hidden="true">★</span><span id="scoreNow">0</span></div>
+    </div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+    <div class="tools">
+      <p class="qnum">ข้อ <span id="qNum">1</span> จาก <span id="qTotal">10</span></p>
+      <div class="grp">
+        <button type="button" class="link" id="vizBtn" aria-pressed="true">ภาพช่วยนับ: เปิด</button>
+        <button type="button" class="link" id="sndBtn" aria-pressed="true">เสียง: เปิด</button>
+      </div>
+    </div>
+    <article class="sheet">
+      <div class="qtext" id="qText"></div>
+      <div class="viz" id="viz"></div>
+    </article>
+    <div class="options" id="options" role="group" aria-label="ตัวเลือกคำตอบ"></div>
+    <div class="fb" id="feedback" role="status" aria-live="polite" hidden>
+      <p class="main" id="fbMain"></p>
+      <p class="eqline" id="fbEq"></p>
+      <button type="button" class="btn primary" id="nextBtn">ข้อต่อไป</button>
+    </div>
+    <div><button type="button" class="link" id="quitBtn">กลับหน้าแรก</button></div>
+  </section>
+
+  <!-- สรุปผล -->
+  <section id="screenResult" hidden aria-label="สรุปผลการเล่น" style="display:contents"></section>
+</div>
+
+<script id="logic">
+const ROUND = 10;
+const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){ const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+const ITEMS = [
+  {n:'ส้ม',      cl:'ผล',   start:'ในตะกร้ามี', add:'แม่ซื้อมาเพิ่มอีก', sub:'กินไป'},
+  {n:'ลูกโป่ง',  cl:'ลูก',  start:'น้องมี',     add:'ได้รับเพิ่มอีก',    sub:'ลอยหายไป'},
+  {n:'ดินสอ',    cl:'แท่ง', start:'ในกล่องมี',  add:'ใส่เพิ่มอีก',       sub:'ให้เพื่อนไป'},
+  {n:'ปลา',      cl:'ตัว',  start:'ในบ่อมี',    add:'ว่ายมาเพิ่มอีก',    sub:'ว่ายหนีไป'},
+  {n:'ขนม',      cl:'ชิ้น', start:'บนจานมี',    add:'วางเพิ่มอีก',       sub:'กินไป'},
+  {n:'หนังสือ',  cl:'เล่ม', start:'บนชั้นมี',   add:'วางเพิ่มอีก',       sub:'ให้เพื่อนยืมไป'},
+  {n:'ไข่',      cl:'ฟอง',  start:'ในตะกร้ามี', add:'ใส่เพิ่มอีก',       sub:'ใช้ทำอาหารไป'},
+  {n:'ดอกไม้',   cl:'ดอก',  start:'ในแจกันมี',  add:'ปักเพิ่มอีก',       sub:'เอาออกไป'}
+];
+function makeQ(kind, max){
+  max = max || 20;
+  let a, b, ans;
+  if (kind === 'add'){ const sum = rand(3, max); a = rand(1, sum - 1); b = sum - a; ans = sum; }
+  else { a = rand(3, max); b = rand(1, a - 1); ans = a - b; }
+  const style = Math.random() < 0.6 ? 'word' : 'plain';
+  const it = ITEMS[rand(0, ITEMS.length - 1)];
+  let text = '';
+  if (style === 'word'){
+    text = kind === 'add'
+      ? `${it.start}${it.n} ${a} ${it.cl} ${it.add} ${b} ${it.cl} รวมทั้งหมดมี${it.n}กี่${it.cl}`
+      : `${it.start}${it.n} ${a} ${it.cl} ${it.sub} ${b} ${it.cl} เหลือ${it.n}กี่${it.cl}`;
+  }
+  const near = shuffle([ans - 2, ans - 1, ans + 1, ans + 2].filter(x => x >= 0 && x <= max));
+  const far = [ans - 3, ans + 3].filter(x => x >= 0 && x <= max);
+  const wrong = near.concat(far).slice(0, 2);
+  return { kind, a, b, ans, style, text, key: `${kind}:${a}:${b}`, options: shuffle([ans, ...wrong]) };
+}
+function makeRound(total, max){
+  total = total || 10; max = max || 20;
+  const nAdd = Math.ceil(total / 2), kinds = [];
+  for (let i = 0; i < total; i++) kinds.push(i < nAdd ? 'add' : 'sub');
+  const seen = new Set(), out = [];
+  for (const k of shuffle(kinds)){
+    let q, n = 0;
+    do { q = makeQ(k, max); n++; } while (seen.has(q.key) && n < 80);
+    seen.add(q.key); out.push(q);
+  }
+  return out;
+}
+function statusOf(pct, thr){ return pct < thr ? 'low' : (pct >= 90 ? 'top' : 'pass'); }
+function maxStreak(rs){ let m = 0, c = 0; for (const r of rs){ c = r.ok ? c + 1 : 0; if (c > m) m = c; } return m; }
+function cleanName(v){
+  return String(v).replace(/[^A-Za-zก-ฺเ-๎ .]/g, '').replace(/^\s+/, '').replace(/\s{2,}/g, ' ').slice(0, 30);
+}
+</script>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const store = {
+    get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+    set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+  };
+  let settings = Object.assign({threshold:60, sound:true, viz:true, name:''}, store.get('mg-p1-settings', {}));
+  let history = store.get('mg-p1-history', []);
+  if (!Array.isArray(history)) history = [];
+  const saveSettings = () => store.set('mg-p1-settings', settings);
+
+  const S = { screen:'start', name:'', qs:[], idx:0, answered:false, pick:-1, results:[], qStart:0, record:null };
+  const screens = { start:$('screenStart'), play:$('screenPlay'), result:$('screenResult') };
+  function show(name, scroll){
+    S.screen = name;
+    for (const k in screens) screens[k].hidden = (k !== name);
+    if (scroll !== false) window.scrollTo(0, 0);
+  }
+
+  /* ---------- sound ---------- */
+  let ac = null;
+  function ensureAudio(){
+    try {
+      if (!ac){ const C = window.AudioContext || window.webkitAudioContext; if (C) ac = new C(); }
+      if (ac && ac.state === 'suspended') ac.resume();
+    } catch(e){}
+  }
+  function tone(f, t0, dur, type, vol){
+    if (!ac) return;
+    try {
+      const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + t0;
+      o.type = type || 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol || 0.12, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + dur + 0.05);
+    } catch(e){}
+  }
+  const playOk = () => { if (!settings.sound) return; ensureAudio(); tone(660, 0, .12); tone(880, .12, .2); };
+  const playBad = () => { if (!settings.sound) return; ensureAudio(); tone(300, 0, .25, 'triangle', .1); };
+  const playDone = () => { if (!settings.sound) return; ensureAudio(); [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .11, .22)); };
+
+  /* ---------- helpers ---------- */
+  function dotsFrames(dots, container){
+    container.textContent = '';
+    for (let i = 0; i < dots.length; i += 10){
+      const fr = document.createElement('div'); fr.className = 'frame';
+      for (let k = 0; k < 10; k++){
+        const d = document.createElement('span'); d.className = 'dot ' + (dots[i + k] || ''); fr.appendChild(d);
+      }
+      container.appendChild(fr);
+    }
+  }
+  const opSign = k => k === 'add' ? '+' : '−';
+  const need = (thr, total) => Math.ceil(thr / 100 * total - 1e-9);
+  const LABELS = ['ก', 'ข', 'ค'];
+  const OK_MSGS = ['เก่งมาก {n}!', 'ถูกต้อง {n} สุดยอดเลย!', '{n} ตอบถูกแล้ว เยี่ยมมาก!', 'ใช่เลย {n} เก่งจังเลย!', 'ดีมาก {n} ไปต่อกันเลย!'];
+  const BAD_MSGS = ['ยังไม่ถูกนะ {n} ไม่เป็นไร ดูคำตอบที่ถูกกัน', 'เกือบแล้ว {n} ลองดูคำตอบที่ถูกนะ', '{n} ไม่เป็นไรนะ ข้อต่อไปลองใหม่ได้', 'ไม่เป็นไร {n} ดูวิธีนับแล้วไปต่อกันนะ'];
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  /* ---------- start screen ---------- */
+  (function demo(){
+    const dots = []; for (let i = 0; i < 7; i++) dots.push('a'); for (let i = 0; i < 3; i++) dots.push('b');
+    const fr = $('demoFrame');
+    dots.forEach(c => { const d = document.createElement('span'); d.className = 'dot ' + c; fr.appendChild(d); });
+  })();
+  const nameInput = $('nameInput'), nameCount = $('nameCount'), nameMsg = $('nameMsg');
+  nameInput.value = cleanName(settings.name || '');
+  const updCount = () => { nameCount.textContent = nameInput.value.length + '/30'; };
+  updCount();
+  nameInput.addEventListener('input', e => {
+    if (e.isComposing) return;
+    const c = cleanName(nameInput.value);
+    if (c !== nameInput.value){ nameInput.value = c; nameMsg.textContent = 'ใช้ได้เฉพาะตัวอักษรไทยและอังกฤษนะ'; }
+    else nameMsg.textContent = '';
+    updCount();
+  });
+  const thrSel = $('thrSel');
+  [50, 60, 70, 80].forEach(v => {
+    const o = document.createElement('option'); o.value = v;
+    o.textContent = v + '% (เช่น ถูก ' + need(v, 10) + ' จาก 10 ข้อ)';
+    thrSel.appendChild(o);
+  });
+  settings.max = settings.max === 10 ? 10 : 20;
+  settings.rounds = [5, 10, 15].includes(settings.rounds) ? settings.rounds : 10;
+  $('lvl' + settings.max).checked = true;
+  $('rnd' + settings.rounds).checked = true;
+  document.querySelectorAll('input[name=lvl]').forEach(r => r.addEventListener('change', () => { settings.max = Number(r.value); saveSettings(); }));
+  document.querySelectorAll('input[name=rnd]').forEach(r => r.addEventListener('change', () => { settings.rounds = Number(r.value); saveSettings(); }));
+  thrSel.value = String(settings.threshold);
+  thrSel.addEventListener('change', () => { settings.threshold = Number(thrSel.value); saveSettings(); });
+
+  $('startForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const nm = cleanName(nameInput.value).trim();
+    if (!nm){ nameMsg.textContent = 'พิมพ์ชื่อก่อนนะ แล้วกดเริ่มเล่น'; nameInput.focus(); return; }
+    startGame(nm);
+  });
+
+  function startGame(nm){
+    S.name = nm; settings.name = nm; saveSettings();
+    S.qs = makeRound(settings.rounds, settings.max); S.max = settings.max; S.idx = 0; S.results = []; S.record = null; S.answered = false; S.pick = -1;
+    ensureAudio();
+    show('play'); renderQuestion();
+  }
+
+  /* ---------- play screen ---------- */
+  function renderProgress(){
+    const p = $('progress'); p.textContent = '';
+    S.qs.forEach((q, i) => {
+      const s = document.createElement('span'); s.className = 'seg';
+      if (i < S.results.length) s.classList.add(S.results[i].ok ? 'ok' : 'bad');
+      else if (i === S.idx) s.classList.add('cur');
+      p.appendChild(s);
+    });
+  }
+  function renderViz(q){
+    const el = $('viz');
+    el.hidden = !settings.viz;
+    if (!settings.viz){ el.textContent = ''; return; }
+    const dots = [];
+    if (q.kind === 'add'){ for (let i = 0; i < q.a; i++) dots.push('a'); for (let i = 0; i < q.b; i++) dots.push('b'); }
+    else { for (let i = 0; i < q.a - q.b; i++) dots.push('a'); for (let i = 0; i < q.b; i++) dots.push('gone'); }
+    el.textContent = '';
+    const frames = document.createElement('div'); frames.className = 'frames';
+    frames.setAttribute('role', 'img');
+    frames.setAttribute('aria-label', 'ภาพช่วยนับ แผ่นสิบช่อง');
+    dotsFrames(dots, frames);
+    const lg = document.createElement('div'); lg.className = 'legend';
+    lg.innerHTML = q.kind === 'add'
+      ? '<span><i class="dot a"></i>จำนวนแรก</span><span><i class="dot b"></i>จำนวนที่เพิ่ม</span>'
+      : '<span><i class="dot a"></i>ที่เหลืออยู่</span><span><i class="dot gone"></i>เอาออกไป</span>';
+    el.appendChild(frames); el.appendChild(lg);
+  }
+  function renderOptions(q){
+    const box = $('options'); box.textContent = '';
+    q.options.forEach((v, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'opt';
+      b.setAttribute('aria-label', 'ตัวเลือก ' + LABELS[i] + ' ตอบ ' + v);
+      b.innerHTML = '<span class="lab" aria-hidden="true">' + LABELS[i] + '.</span><span class="num">' + v + '</span>';
+      b.addEventListener('click', () => answer(i));
+      box.appendChild(b);
+    });
+  }
+  function renderQuestion(){
+    const q = S.qs[S.idx];
+    $('whoName').textContent = S.name;
+    $('qNum').textContent = S.idx + 1; $('qTotal').textContent = S.qs.length;
+    $('scoreNow').textContent = S.results.filter(r => r.ok).length;
+    renderProgress();
+    const qt = $('qText'); qt.className = 'qtext ' + q.style;
+    if (q.style === 'plain'){
+      qt.innerHTML = '<span class="eq">' + q.a + ' ' + opSign(q.kind) + ' ' + q.b + ' = ?</span><span class="ask">เท่ากับเท่าไร</span>';
+    } else qt.textContent = q.text;
+    renderViz(q); renderOptions(q);
+    const fb = $('feedback'); fb.hidden = true; fb.className = 'fb';
+    if (S.answered) applyAnswer(S.pick, true); else S.qStart = Date.now();
+  }
+  function answer(i){
+    if (S.answered) return;
+    const q = S.qs[S.idx], picked = q.options[i];
+    S.answered = true; S.pick = i;
+    S.results.push({ kind:q.kind, a:q.a, b:q.b, ans:q.ans, picked, ok:picked === q.ans, ms:Date.now() - S.qStart });
+    applyAnswer(i, false);
+  }
+  function applyAnswer(i, restored){
+    const q = S.qs[S.idx], picked = q.options[i], ok = picked === q.ans;
+    [...$('options').children].forEach((b, k) => {
+      b.disabled = true;
+      const v = q.options[k]; const tag = document.createElement('span'); tag.className = 'tag';
+      if (v === q.ans){ b.classList.add('right'); tag.textContent = (k === i) ? 'ถูก' : 'คำตอบที่ถูก'; b.appendChild(tag); }
+      else if (k === i){ b.classList.add('wrong'); tag.textContent = 'ยังไม่ถูก'; b.appendChild(tag); }
+      else b.classList.add('dim');
+    });
+    const fb = $('feedback');
+    fb.className = 'fb ' + (ok ? 'ok' : 'bad');
+    $('fbMain').textContent = pick(ok ? OK_MSGS : BAD_MSGS).replace('{n}', () => S.name);
+    $('fbEq').textContent = q.a + ' ' + opSign(q.kind) + ' ' + q.b + ' = ' + q.ans;
+    $('nextBtn').textContent = S.idx === S.qs.length - 1 ? 'ดูผลสรุป' : 'ข้อต่อไป';
+    fb.hidden = false;
+    $('scoreNow').textContent = S.results.filter(r => r.ok).length;
+    renderProgress();
+    if (!restored){
+      if (ok){ playOk(); const sb = $('scoreBox'); sb.classList.remove('pop'); void sb.offsetWidth; sb.classList.add('pop'); } else playBad();
+      $('nextBtn').focus({ preventScroll:true });
+      const calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      fb.scrollIntoView({ block:'nearest', behavior: calm ? 'auto' : 'smooth' });
+    }
+  }
+  $('nextBtn').addEventListener('click', () => {
+    S.idx++; S.answered = false; S.pick = -1;
+    if (S.idx >= S.qs.length) finish(); else { renderQuestion(); window.scrollTo(0, 0); }
+  });
+  $('vizBtn').addEventListener('click', () => {
+    settings.viz = !settings.viz; saveSettings(); syncToggles();
+    if (S.screen === 'play') renderViz(S.qs[S.idx]);
+  });
+  $('sndBtn').addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); syncToggles(); if (settings.sound){ ensureAudio(); tone(660, 0, .12); } });
+  function syncToggles(){
+    $('vizBtn').textContent = 'ภาพช่วยนับ: ' + (settings.viz ? 'เปิด' : 'ปิด'); $('vizBtn').setAttribute('aria-pressed', String(settings.viz));
+    $('sndBtn').textContent = 'เสียง: ' + (settings.sound ? 'เปิด' : 'ปิด'); $('sndBtn').setAttribute('aria-pressed', String(settings.sound));
+  }
+  syncToggles();
+  let quitArmed = null;
+  $('quitBtn').addEventListener('click', () => {
+    const b = $('quitBtn');
+    if (!quitArmed){
+      b.textContent = 'ข้อที่เล่นแล้วจะหายไป แตะอีกครั้งเพื่อกลับ';
+      quitArmed = setTimeout(() => { b.textContent = 'กลับหน้าแรก'; quitArmed = null; }, 3500);
+    } else {
+      clearTimeout(quitArmed); quitArmed = null; b.textContent = 'กลับหน้าแรก';
+      show('start');
+    }
+  });
+
+  /* ---------- finish + result ---------- */
+  function finish(){
+    const rs = S.results, total = rs.length, score = rs.filter(r => r.ok).length;
+    const add = rs.filter(r => r.kind === 'add'), sub = rs.filter(r => r.kind === 'sub');
+    const rec = {
+      t: Date.now(), name: S.name, score, total,
+      addOk: add.filter(r => r.ok).length, addTotal: add.length,
+      subOk: sub.filter(r => r.ok).length, subTotal: sub.length,
+      avgMs: Math.round(rs.reduce((s, r) => s + r.ms, 0) / Math.max(1, total)),
+      streak: maxStreak(rs), thr: settings.threshold, max: S.max || 20
+    };
+    S.record = rec;
+    history.push(rec); if (history.length > 100) history = history.slice(-100);
+    store.set('mg-p1-history', history);
+    playDone();
+    show('result'); renderResult();
+  }
+
+  function meterHtml(pct, thr, cls, small){
+    return '<div class="meterWrap"><div class="meter' + (small ? ' sm' : '') + '" role="img" aria-label="ได้ ' + pct + ' เปอร์เซ็นต์ เกณฑ์ ' + thr + ' เปอร์เซ็นต์">' +
+      '<div class="fill ' + cls + '" style="width:' + pct + '%"></div><div class="mark" style="left:' + thr + '%"></div></div>' +
+      (small ? '' : '<span class="markLabel" style="left:' + thr + '%">เกณฑ์ ' + thr + '%</span>') + '</div>';
+  }
+  const STATUS_LABEL = { low:'ต่ำกว่าเกณฑ์', pass:'ผ่านเกณฑ์', top:'ยอดเยี่ยม ผ่านเกณฑ์' };
+
+  function skillRow(label, ok, tot, thr){
+    if (!tot) return '';
+    const p = Math.round(ok / tot * 100), st = p < thr ? 'low' : 'pass';
+    return '<div class="skill"><div class="row"><span class="name">' + label + '</span><span class="frac">' + ok + '/' + tot +
+      '</span><span class="pill ' + st + '">' + (st === 'low' ? 'ต่ำกว่าเกณฑ์' : 'ผ่านเกณฑ์') + '</span></div>' + meterHtml(p, thr, st, true) + '</div>';
+  }
+
+  function renderResult(){
+    const rec = S.record, rs = S.results, thr = rec.thr;
+    const pctRaw = rec.score / rec.total * 100, pct = Math.round(pctRaw);
+    const st = statusOf(pctRaw, thr);
+    const nm = esc(rec.name);
+    const when = new Date(rec.t).toLocaleString('th-TH', { dateStyle:'medium', timeStyle:'short' });
+    const msg = st === 'top' ? 'สุดยอดมาก ' + nm + '! ตอบถูก ' + rec.score + ' จาก ' + rec.total + ' ข้อ'
+      : st === 'pass' ? 'ผ่านเกณฑ์แล้ว ' + nm + ' เก่งมาก ฝึกอีกนิดจะได้คะแนนเต็มแน่นอน'
+      : nm + ' ยังต่ำกว่าเกณฑ์อยู่นิดหน่อย ไม่เป็นไรนะ เล่นอีกรอบจะเก่งขึ้นแน่นอน';
+    const sec = (rec.avgMs / 1000).toFixed(1);
+
+    const addLow = rec.addTotal && rec.addOk / rec.addTotal * 100 < thr;
+    const subLow = rec.subTotal && rec.subOk / rec.subTotal * 100 < thr;
+    const tip = addLow && subLow ? 'ควรฝึกทั้งการบวกและการลบเพิ่ม'
+      : addLow ? 'ควรฝึกการบวกเพิ่ม' : subLow ? 'ควรฝึกการลบเพิ่ม' : '';
+
+    const mine = history.filter(h => String(h.name).toLowerCase() === rec.name.toLowerCase());
+    const last = mine.slice(-10);
+    const passN = mine.filter(h => h.score / h.total * 100 >= h.thr).length;
+    const best = mine.reduce((m, h) => Math.max(m, h.score), 0);
+    const cols = last.map(h => {
+      const p = h.score / h.total * 100, low = p < h.thr;
+      const d = new Date(h.t).toLocaleDateString('th-TH', { day:'numeric', month:'short' });
+      return '<div class="hcol' + (h.t === rec.t ? ' cur' : '') + '" role="listitem" aria-label="' + d + ' ถูก ' + h.score + ' จาก ' + h.total + ' ข้อ ' + (low ? 'ต่ำกว่าเกณฑ์' : 'ผ่านเกณฑ์') + '">' +
+        '<div class="hplot"><div class="hbar' + (low ? ' low' : '') + '" style="height:' + p + '%"></div><div class="htick" style="bottom:' + h.thr + '%"></div></div>' +
+        '<div class="hlab">' + h.score + '/' + h.total + '</div><div class="hdate">' + d + '</div></div>';
+    }).join('');
+
+    const review = rs.map((r, i) => '<li><span class="rn">ข้อ ' + (i + 1) + '</span><span class="req">' + r.a + ' ' + opSign(r.kind) + ' ' + r.b + ' = ' + r.ans + '</span>' +
+      (r.ok ? '<span class="rst"><span class="pill pass">ถูก</span></span>'
+            : '<span class="rst"><span class="pill low">ผิด</span>ตอบ ' + r.picked + '</span>') + '</li>').join('');
+
+    screens.result.innerHTML =
+      '<article class="sheet hero">' +
+        '<p class="eyebrow">สรุปผลการเล่น · ระดับ' + ((rec.max || 20) <= 10 ? 'ง่าย' : 'กลาง') + ' · ' + esc(when) + '</p>' +
+        '<h2 id="resTitle" tabindex="-1">' + nm + '</h2>' +
+        '<div class="scoreRow"><span class="big">' + rec.score + '<small>/' + rec.total + '</small></span>' +
+        '<span class="pill lg ' + st + '">' + STATUS_LABEL[st] + '</span></div>' +
+        '<p class="msg">' + msg + '</p>' +
+        meterHtml(pct, thr, st === 'low' ? 'low' : 'pass', false) +
+        '<p class="note">เกณฑ์ผ่านที่ตั้งไว้ ' + thr + '% ต้องตอบถูกอย่างน้อย ' + need(thr, rec.total) + ' จาก ' + rec.total + ' ข้อ</p>' +
+      '</article>' +
+      '<div class="tiles">' +
+        '<div class="tile"><span class="k">ตอบถูก</span><span class="v">' + pct + '%</span></div>' +
+        '<div class="tile"><span class="k">เวลาเฉลี่ย</span><span class="v">' + sec + '<small> วินาที/ข้อ</small></span></div>' +
+        '<div class="tile"><span class="k">ถูกติดกันสูงสุด</span><span class="v">' + rec.streak + '<small> ข้อ</small></span></div>' +
+      '</div>' +
+      '<section class="block"><h3>แยกตามชนิดโจทย์</h3>' +
+        skillRow('โจทย์บวก', rec.addOk, rec.addTotal, thr) + skillRow('โจทย์ลบ', rec.subOk, rec.subTotal, thr) +
+        (tip ? '<p class="tip">' + tip + '</p>' : '') +
+      '</section>' +
+      '<section class="block"><h3>ตรวจคำตอบทีละข้อ</h3><ul class="review">' + review + '</ul></section>' +
+      '<section class="block"><h3>ประวัติของ ' + nm + '</h3>' +
+        '<p class="note">เล่นแล้ว ' + mine.length + ' ครั้ง · ผ่านเกณฑ์ ' + passN + ' ครั้ง · ต่ำกว่าเกณฑ์ ' + (mine.length - passN) + ' ครั้ง · คะแนนสูงสุด ' + best + ' ข้อ</p>' +
+        '<div class="hist" role="list" aria-label="คะแนนย้อนหลัง">' + cols + '</div>' +
+        '<p class="note">แท่งสีส้มคือต่ำกว่าเกณฑ์ เส้นประคือเกณฑ์ผ่านของครั้งนั้น แสดงสูงสุด 10 ครั้งล่าสุด</p>' +
+      '</section>' +
+      '<div class="actions">' +
+        '<button type="button" class="btn primary block" data-act="again">เล่นอีกครั้ง</button>' +
+        '<div class="row2"><button type="button" class="link" data-act="change">เปลี่ยนผู้เล่น</button>' +
+        '<button type="button" class="link" data-act="clear">ล้างประวัติทั้งหมดในเครื่องนี้</button></div>' +
+      '</div>';
+    const t = $('resTitle'); if (t) t.focus({ preventScroll:true });
+  }
+
+  let clearArmed = null;
+  screens.result.addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const act = b.dataset.act;
+    if (act === 'again') startGame(S.name);
+    else if (act === 'change'){ nameInput.value = ''; updCount(); show('start'); nameInput.focus(); }
+    else if (act === 'clear'){
+      if (!clearArmed){
+        b.textContent = 'ลบประวัติทุกคนในเครื่องนี้ แตะอีกครั้งเพื่อยืนยัน';
+        clearArmed = setTimeout(() => { b.textContent = 'ล้างประวัติทั้งหมดในเครื่องนี้'; clearArmed = null; }, 3500);
+      } else {
+        clearTimeout(clearArmed); clearArmed = null;
+        history = []; store.set('mg-p1-history', history);
+        renderResult();
+      }
+    }
+  });
+
+  /* ---------- hot update support ---------- */
+  const hot = window.claude && window.claude.hot;
+  if (hot && hot.snapshot) hot.snapshot(() => ({ S: JSON.parse(JSON.stringify(S)) }));
+  function boot(data){
+    const saved = data && data.S;
+    if (saved && saved.screen && saved.screen !== 'start' && Array.isArray(saved.qs) && saved.qs.length){
+      Object.assign(S, saved);
+      if (S.screen === 'play'){ show('play', false); renderQuestion(); }
+      else if (S.screen === 'result' && S.record){ show('result', false); renderResult(); }
+      else show('start', false);
+    } else show('start', false);
+  }
+  if (hot && hot.ready) hot.ready(boot); else boot((hot && hot.data) || {});
+})();
+</script>
+
+</body>
+</html>
